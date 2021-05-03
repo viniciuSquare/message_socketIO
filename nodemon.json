@@ -1,0 +1,3 @@
+{
+  "watch-css": "node-sass -w scss -o public/css"
+}

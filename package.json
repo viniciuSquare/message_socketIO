@@ -4,7 +4,7 @@
   "description": "Study case implementing and starting Sockey.io documentation page",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon node server.js",
+    "start": "nodemon --config nodemon.json node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

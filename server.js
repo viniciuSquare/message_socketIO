@@ -12,11 +12,16 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  res.send('./index.html');
+  
+  res.send('./index.html' );
+
 });
 
+// Socket
 io.on('connection', (socket) => {
   io.emit('login', socket.id)
+  
+  console.log(io.allSockets())
 
   socket.on('disconnect', () => {
     io.emit('logout', socket.id)

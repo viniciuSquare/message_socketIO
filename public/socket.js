@@ -33,38 +33,39 @@ socket.on('logout', socketId => {
 })
 
 const appendMessage = ( msg, type ) => {
-  var item = document.createElement('li');
-  item.textContent = msg;
+  var content = document.createElement('li');
+  content.textContent = msg;
 
   switch(type) {
     case 'received':
-      item.classList.add('received')
+      content.classList.add('received')
       break;
     
     case 'sent':
-      item.classList.add('sent')
+      content.classList.add('sent')
       break;
+
     case 'typing':
-      item.classList.add('typing')
+      content.classList.add('typing')
       break;
 
   }
-  messages.appendChild(item);
+  messages.appendChild(content);
 
   window.scrollTo(0, document.body.scrollHeight);
 }
 
 // sending message
-console.log(input)
-// input.onchange = function(){
-//   console.log("ta digitando")
-//   socket.emit('typing', socket)
-// }
+input.onfocus = function(){
+  console.log("ta digitando")
+  socket.emit('typing', socket)
+}
 
 socket.on('is typing', socketUser => {
   appendMessage(`${socketUser} is typing`, "typing");
 })
 
+// send msg
 form.addEventListener('submit', function(e) {
   e.preventDefault();
   if (input.value) {
@@ -80,3 +81,4 @@ socket.on('chat message', function(msg) {
   appendMessage(msg, 'received')
 });
 
+// join room
