@@ -1,0 +1,18 @@
+{
+  "name": "message_socketIO",
+  "version": "1.0.0",
+  "description": "Study case implementing and starting Sockey.io documentation page",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
+    "socket.io": "^4.0.1"
+  }
+}
