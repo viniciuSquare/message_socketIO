@@ -1,5 +1,7 @@
 const express = require("express");
-const http = require("http");
+// TODO TEST
+  // const app = require("express")();
+
 const socketIo = require("socket.io");
 
 const port = process.env.PORT || 4001;
@@ -8,6 +10,7 @@ const index = require("./routes/index");
 const app = express();
 app.use(index);
 
+const http = require("http");
 const server = http.createServer(app, (req, res)=>{
   res.writeHead(204,{
       'Acces-Control-Allow-Origin':'*',
@@ -17,6 +20,8 @@ const server = http.createServer(app, (req, res)=>{
 
 });
 
+// TODO
+  //search args
 const io = socketIo(server, {
   cors: {
       origin: '*', 
@@ -28,12 +33,6 @@ let interval;
 
 io.on("connection", (socket) => {
   console.log("New client connected", socket.id);
-
-  // if (interval) {
-  //   clearInterval(interval);
-  // }
-
-  // interval = setInterval(() => getApiAndEmit(socket), 1000);
 
 // Chatting
   socket.on('chat message', message => {
