@@ -4,10 +4,8 @@ export const AppContainer = styled.div`
   .container {
     display: grid;
     grid-template-columns: minmax(330px ,25%) 75%;
-  }
-
-  .chat, aside {
     height: calc(100vh - 3.8rem);
+
   }
 
   header {

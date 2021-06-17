@@ -1,74 +1,128 @@
-const express = require("express");
-// TODO TEST
-  // const app = require("express")();
-
-const socketIo = require("socket.io");
-
-const port = process.env.PORT || 4001;
-const index = require("./routes/index");
-
-const app = express();
-app.use(index);
-
-const http = require("http");
-const server = http.createServer(app, (req, res)=>{
-  res.writeHead(204,{
-      'Acces-Control-Allow-Origin':'*',
-      'Acces-Control-Allow-Methods': 'OPTIONS, GET, POST',
-  })
-  res.end('hey there')
-
+var app = require('express')();
+var http = require('http').createServer(app);
+var io = require('socket.io')(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credential: false
+  }
 });
 
-// TODO
-  //search args
-const io = socketIo(server, {
-  cors: {
-      origin: '*', 
-      credentials: false
-  }
-}); // < Interesting!
+const PORT = 4001;
 
-let interval;
+var MOCK_CHANNELS = [{
+  name: 'Global chat',
+  participants: 0,
+  id: 0,
+  sockets: []
+}, {
+  name: 'Funny',
+  participants: 0,
+  id: 1,
+  sockets: []
+}, {
+  name: 'SAD',
+  participants: 0,
+  id: 4,
+  sockets: []
+}];
 
-io.on("connection", (socket) => {
-  console.log("New client connected", socket.id);
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+})
 
-// Chatting
-  socket.on('chat message', message => {
-    socket.broadcast.emit('chat message', message)
-  })
 
-  socket.on('typing', socketUser => {
-    socket.broadcast.emit('is typing', socketUser.id)
-  })
+http.listen(PORT, () => {
+    console.log(`listening on *:${PORT}`);
+});
+// END SERVER CONFIG
 
-// room router
-  
-  socket.on('join-room', (roomId, userId) =>{
-    // add user on the same room
-    socket.join(roomId)
-    // send others that a user joined
-    socket.to(roomId).broadcast.emit('user-connected', userId)
-    socket.on('disconnect', ()=>{
-        console.log("disconnected!", roomId, userId)
-        socket.to(roomId).broadcast.emit('user-disconnected', userId)
-    })
-  })
+// SOCKET EVENT LISTENERS
+io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
+  console.log('new client connected');
 
-// close
-  socket.on("disconnect", () => {
-    console.log("Client disconnected", socket.id);
-    clearInterval(interval);
+  socket.emit('connection', null);
 
+  socket.on('channel-join', id => {
+    console.log('channel join', id);
+    MOCK_CHANNELS.forEach(channel => {
+      if (channel.id == id) {
+        // if socket isn't at the channel, add it
+        if (channel.sockets.indexOf(socket.id) == (-1)) {
+          console.log("new socket client")
+          channel.sockets.push(socket.id);
+          channel.participants++;
+
+          console.log(MOCK_CHANNELS)
+          io.emit('channel', MOCK_CHANNELS);
+        }
+        console.log(channel)
+      } else {
+          console.log("AQUI CARAI")
+          let index = channel.sockets.indexOf(socket.id);
+          if (index != (-1)) {
+            channel.sockets.splice(index, 1);
+            channel.participants--;
+            
+            console.log(MOCK_CHANNELS)
+            io.emit('channel', MOCK_CHANNELS);
+          }
+      }
+    });
+
+    return id;
+  });
+
+// MESSAGE
+  socket.on('send-message', message => {
+    console.log("MESSAGE ", message)
+    socket.emit('message', message);
+  });
+
+// DISCONNECT
+  socket.on('disconnect', () => {
+    console.log("desconnected " + socket.id )
+      MOCK_CHANNELS.forEach(channel => {
+          let index = channel.sockets.indexOf(socket.id);
+          if (index != (-1)) {
+              channel.sockets.splice(index, 1);
+              channel.participants--;
+              io.emit('channel', channel);
+          }
+      });
   });
 
 });
 
-const getApiAndEmit = socket => {
-  const response = new Date();
-  // Emitting a new message. Will be consumed by the client
-  socket.emit("FromAPI", response);
-};
 
-server.listen(port, () => console.log(`Listening on port ${port}`));
+
+// CHANNEL LIST
+app.get('/getChannels', (req, res) => {
+  res.json({
+      channels: MOCK_CHANNELS
+  })
+});
+
+
+// // Chatting
+//   socket.on('chat message', message => {
+//     socket.broadcast.emit('chat message', message)
+//   })
+
+//   socket.on('typing', socketUser => {
+//     socket.broadcast.emit('is typing', socketUser.id)
+//   })
+
+// // room router
+  
+//   socket.on('join-room', (roomId, userId) =>{
+//     // add user on the same room
+//     socket.join(roomId)
+//     // send others that a user joined
+//     socket.to(roomId).broadcast.emit('user-connected', userId)
+//     socket.on('disconnect', ()=>{
+//         console.log("disconnected!", roomId, userId)
+//         socket.to(roomId).broadcast.emit('user-disconnected', userId)
+//     })
+//   })

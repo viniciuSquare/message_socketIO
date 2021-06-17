@@ -7,48 +7,87 @@ import { AppContainer } from 'styled';
 import { useEffect, useState } from 'react';
 
 import socketClient from "socket.io-client";
-const SERVER = "http://127.0.0.1:8080";
+const SERVER = "http://127.0.0.1:4001";
 
 function App() {
-  const [ contextData, setContextData ] = useState({
-    channels: null,
-    socket: null,
-    channel: null
-  })
+  const [ channels, setChannels ] = useState(null)
+  const [ socket, setSocket ] = useState(null)
+  const [ channel, setChannel ] = useState(null)
 
+  function configureSocket() {
+    setSocket(socketClient(SERVER));
+  }
+  
+  const loadChannels = async () => {
+    const { channels } = await fetch('http://localhost:4001/getChannels')
+      .then(response => response.json())
+
+    return channels;
+  }
+  // builder
   useEffect(() => {
-    // TODO
-    loadChannels();
     configureSocket();
-  })
-
-  configureSocket =  () => {
-    var socket = socketClient(SERVER);
-    socket.on('connection', () => {
-      if (contextData.channel) {
-          handleChannelSelect(contextData.channel.id);
+    loadChannels().then(
+      response => {
+        setChannels(response)
       }
-    });
-  }
+    )
+  }, [] )
 
-  loadChannels = async () => {
-    fetch('http://localhost:8080/getChannels').then(async response => {
-      let data = await response.json();
-      this.setState({ channels: data.channels });
-    })
-  }
+  // useEffect(() => { console.log(channels) } , [channels])
 
-  handleChannelSelect = id => {
-    let channel = contextData.channels.find(channel => {
+  // socket listener
+  useEffect( () => {
+      if(socket!=null){
+        socket.on('connection', () => {
+          if (channel) {
+              handleChannelSelect(channel.id);
+          }
+        });
+
+      // TODO
+        socket.on('channel', channels => {     
+          console.log("AUX CHANNEL IT IS " + channels)
+          setChannels(channels)
+          
+        // Message
+          socket.on('message', message => {
+            channels.forEach(channel => {
+              if (channel.id === message.channel_id) {
+                if (!channel.messages) {
+                  channel.messages = [message];
+                  setChannel(channel)
+
+                } else {
+                  channel.messages.push(message);
+                  setChannel(channel)
+
+                }
+              }
+            });
+        });
+
+          setChannels(channels)
+
+        })
+        setChannels(channels)
+      }
+  }, [socket] )
+  
+  const handleChannelSelect = id => {
+    // TODO
+      // validation if current channel
+
+    let channel = channels.find(channel => {
         return channel.id === id;
     });
-    this.setState({ channel });
-    this.socket.emit('channel-join', id, ack => {
-    });
+    // console.log(channel)
+    setChannel(channel)
+    socket.emit('channel-join', id);
   }
 
-  handleSendMessage = (channel_id, text) => {
-    this.socket.emit('send-message', { channel_id, text, senderName: this.socket.id, id: Date.now() });
+  const handleSendMessage = (channel_id, text) => {
+    socket.emit('send-message', { channel_id, text, senderName: socket.id, id: Date.now() });
   }
 
   return (
@@ -57,8 +96,8 @@ function App() {
       <Header/>
 
       <div className="container">
-        <Aside channels={  } onSelectChannel={ handleChannelSelect }/>
-        <Chat onSendMessage={handleSendMessage} channel={contextData.channel}/>
+        <Aside className="channels" channels={ channels } onSelectChannel={ handleChannelSelect }/>
+        <Chat className="chat" onSendMessage={handleSendMessage} channel={channel}/>
       </div>
       
     </AppContainer>

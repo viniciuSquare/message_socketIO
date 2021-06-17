@@ -16,16 +16,22 @@ export const ChatConteiner = styled.div`
   padding-top: 0.5rem;  
   
 /* Messages */
-  #messages { 
-    list-style-type: none; 
+  #messages {
+    height: 80%;
+    background-color: #595a5b;
+
+    max-width: 80%;
+    margin: auto;
   }
 
-  #messages > li { 
-    padding: 0.5rem 1rem; 
-  }
+  .chatAlert {
+    height: 100%;
+    width: 100%;
 
-  #messages > li:nth-child(odd) { 
-    background: #efefef; 
+    display: flex;
+    justify-content: center;
+
+    align-items: center;
   }
 
   #form { 
