@@ -5,6 +5,7 @@ Study case based on Google Chat, practicing ReactJS, Sockey.IO and CSS.
 * JavaScript - frontend and backend
 * ReactJS - frontend
   * contextAPI
+  
   **Style**
   * Styled components
 * Express - backend socket interface
