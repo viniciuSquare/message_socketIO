@@ -1,7 +1,7 @@
 # message_socketIO
 Study case based on Google Chat, practicing ReactJS, Sockey.IO and CSS.
 
-### Technologies and its main developeds concepts 
+### Technologies and its main developed concepts 
 * JavaScript - frontend and backend
 * ReactJS - frontend
   * contextAPI
