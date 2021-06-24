@@ -9,7 +9,15 @@ var io = require('socket.io')(http, {
 });
 
 const PORT = 4001;
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+})
 
+http.listen(PORT, () => {
+    console.log(`listening on *:${PORT}`);
+});
+// END SERVER CONFIG
 var MOCK_CHANNELS = [{
   name: 'Global chat',
   participants: 0,
@@ -27,17 +35,6 @@ var MOCK_CHANNELS = [{
   sockets: []
 }];
 
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    next();
-})
-
-
-http.listen(PORT, () => {
-    console.log(`listening on *:${PORT}`);
-});
-// END SERVER CONFIG
-
 // SOCKET EVENT LISTENERS
 io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
   console.log('new client connected');
@@ -46,6 +43,7 @@ io.on('connection', (socket) => { // socket object may be used to send specific 
 
   socket.on('channel-join', id => {
     console.log('channel join', id);
+
     MOCK_CHANNELS.forEach(channel => {
       if (channel.id == id) {
         // if socket isn't at the channel, add it
@@ -76,8 +74,25 @@ io.on('connection', (socket) => { // socket object may be used to send specific 
 
 // MESSAGE
   socket.on('send-message', message => {
-    console.log("MESSAGE ", message)
-    socket.emit('message', message);
+    
+    console.log("MESSAGE ", message.text)
+
+    MOCK_CHANNELS.forEach( channel => {
+    
+      if (channel.id === message.channel_id) {
+        if (!channel.messages) {
+          channel.messages = [message];
+          console.log("FIRST", channel)
+
+        } else {
+          channel.messages.push(message);
+          console.log("THERE IS MSG", channel)
+        }
+      }
+
+    });
+    
+    io.emit('message', MOCK_CHANNELS);
   });
 
 // DISCONNECT
@@ -95,34 +110,9 @@ io.on('connection', (socket) => { // socket object may be used to send specific 
 
 });
 
-
-
 // CHANNEL LIST
 app.get('/getChannels', (req, res) => {
   res.json({
       channels: MOCK_CHANNELS
   })
 });
-
-
-// // Chatting
-//   socket.on('chat message', message => {
-//     socket.broadcast.emit('chat message', message)
-//   })
-
-//   socket.on('typing', socketUser => {
-//     socket.broadcast.emit('is typing', socketUser.id)
-//   })
-
-// // room router
-  
-//   socket.on('join-room', (roomId, userId) =>{
-//     // add user on the same room
-//     socket.join(roomId)
-//     // send others that a user joined
-//     socket.to(roomId).broadcast.emit('user-connected', userId)
-//     socket.on('disconnect', ()=>{
-//         console.log("disconnected!", roomId, userId)
-//         socket.to(roomId).broadcast.emit('user-disconnected', userId)
-//     })
-//   })
