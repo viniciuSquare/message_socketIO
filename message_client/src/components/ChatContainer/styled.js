@@ -3,6 +3,8 @@ import styled from "styled-components";
 export const ChatConteiner = styled.div`
   position: relative;
   
+  /* padding-top: 0.5rem;   */
+  
   header {
     padding-top: 0.5rem;  
 
@@ -13,7 +15,7 @@ export const ChatConteiner = styled.div`
     font-size: 1.3rem;
     font-weight: 400;
   }
-  padding-top: 0.5rem;  
+  
   
 /* Messages */
   #messages {

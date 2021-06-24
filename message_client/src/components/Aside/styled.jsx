@@ -28,7 +28,7 @@ export const AsideContainer = styled.aside`
   }
 
   /* items */
-   li {
+   li.channel {
     padding: 10px 1.25rem 10px;
     align-items: center;
     display: grid;
@@ -60,6 +60,18 @@ export const AsideContainer = styled.aside`
     position: absolute;
     width: 100%;
     top: 50%;
+  }
+
+  @media screen and (max-width: 768px){
+    .channel{
+      padding: 5px;
+    }
+  }
+  
+  @media screen and (max-width: 350px){
+    .channel{
+      padding: 0;
+    }
   }
 
 `

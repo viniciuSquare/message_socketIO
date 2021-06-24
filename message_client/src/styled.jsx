@@ -2,10 +2,12 @@ import styled from "styled-components";
 
 export const AppContainer = styled.div`
   max-height: 100vh;
-  
+  max-width: 100vw;
+
   .container {
     display: grid;
-    grid-template-columns: minmax(330px ,25%) 75%;
+    grid-template-columns: 330px 75%; 
+
     height: calc(100vh - 4.8rem);
 
   }
@@ -17,6 +19,15 @@ export const AppContainer = styled.div`
     padding: 0.75rem 2rem;
 
   } 
+  
+  @media screen and (max-width: 768px){
+    font-size: 12px;
+    .container {
+      grid-template-columns: minmax(120px, 3fr) 7fr;
+
+    }
+
+  }
 
 /* User status indicator */
   h4.status {

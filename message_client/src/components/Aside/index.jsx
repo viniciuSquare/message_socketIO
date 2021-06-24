@@ -42,7 +42,7 @@ export default function Aside() {
         <button type="button" className="collapsible">Rooms</button>
 
         <li>  
-          <h3>TI</h3>
+          <h3 className="room channel">TI</h3>
           <p>last seem 5 min ago</p>
         </li>
         {
