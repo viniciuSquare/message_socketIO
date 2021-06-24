@@ -1,40 +1,31 @@
 import { useEffect, useRef, useState } from "react";
+
 import { ChatConteiner } from "./styled";
 
 import Message from '../Message'
 
-/** message
-     * sender
-     * receiver
-     * text       */
-  // setMessages([
-  //   {
-  //     message : "Hello",
-  //     type : "received"
-  //     sender : "socket.id"
-  //   },
-  // ])
+import { useChannel } from "hooks/useChannel";
 
-export default function Chat({ onSendMessage, channel }) {
+export default function Chat() {
   const inputRef = useRef(null);
-  // const chatContainerRef = useRef(null);
 
-  // trying
+  const {channel, socket, handleSendMessage} = useChannel();
+
   const [message, setMessage] = useState("")
-  
-
+    
   const send = () => {
     let  { inputValue } = message;
     console.log("send", channel, inputValue)
 
     if (inputValue && inputValue != '') {
-      onSendMessage(channel.id, inputValue);
+
+      handleSendMessage(channel.id, inputValue);
+
       setMessage({inputValue: ""});
+
       inputRef.current.value = "";
     }
   }
-  
-  useEffect(()=>{console.log(channel)}, [channel])
 
   const handleInput = e => {
     setMessage({inputValue: e.target.value})
@@ -52,12 +43,16 @@ export default function Chat({ onSendMessage, channel }) {
           {/* massages */}
           <ul id="messages">
             { 
-              // useEffect(()=>{}, [channel.message])
               channel.messages ? (
-                channel.messages.map(e=> {
+                channel.messages.map((message, idx) => {
                   return (
                     <>
-                      <Message senderName={e.senderName} message={e.text}/>
+                      <Message 
+                        key={idx}
+                        senderName={message.senderName} 
+                        message={message.text} 
+                        className={socket.id == message.senderName ? "sent" : "received"}
+                      />
                     </>
                   )
                 }) 

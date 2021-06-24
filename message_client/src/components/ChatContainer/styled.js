@@ -18,6 +18,10 @@ export const ChatConteiner = styled.div`
 /* Messages */
   #messages {
     height: 80%;
+    max-height: 60%;
+
+    overflow-x: auto;
+
     background-color: #595a5b;
 
     max-width: 80%;

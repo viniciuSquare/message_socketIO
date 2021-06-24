@@ -1,10 +1,12 @@
 import styled from "styled-components";
 
 export const AppContainer = styled.div`
+  max-height: 100vh;
+  
   .container {
     display: grid;
     grid-template-columns: minmax(330px ,25%) 75%;
-    height: calc(100vh - 3.8rem);
+    height: calc(100vh - 4.8rem);
 
   }
 

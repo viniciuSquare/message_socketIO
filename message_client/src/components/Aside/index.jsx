@@ -1,21 +1,24 @@
 import Channel from "components/Channel";
+import { useChannel } from "hooks/useChannel";
 import { AsideContainer } from "./styled";
 
-export default function Aside({channels, onSelectChannel}) {
-  // const [onSelectedChannel, channels] = [()=> console.log("hi"), {id:1, participants:4, name: "room"}]
+export default function Aside() {
+  const {socket, channels, handleChannelSelection} = useChannel();
+  
   const handleClick = id => {
-    onSelectChannel(id)
-    // console.log(id)
+    handleChannelSelection(id)
   }
 
-  let channelsList = <div className="no-content-message">There is no channels to show</div>;
+  let channelsList = channels?.state == 404 
+    ? <div className="no-content-message">There is no channels to show</div> 
+    : <div className="no-content-message">Server is off, try again later</div>;
   let userList = [];
 
   if (channels!=null) {
+    console.log(channels)
     channelsList = channels?.map( channel => {
-      // console.log(channel)
       return <Channel 
-        key={channel.id}  
+        key={channel.channel_id}  
         id={channel.id} 
         participants={channel.participants}
         name = {channel.name}
@@ -33,18 +36,6 @@ export default function Aside({channels, onSelectChannel}) {
       <button type="button" className="collapsible">Chat</button>
       <ul className="toCollapse userList">
         {channelsList}
-        {/* <li className="user">
-          <h3>Vinicius</h3>
-          <h4 className="status online">online</h4>
-        </li>
-        <li className="user">
-          <h3>Gabi</h3>
-          <h4 className="status offline">offline</h4>
-        </li>
-        <li className="user">
-          <h3>Vanessa</h3>
-          <h4 className="status online">online</h4>
-        </li> */}
       </ul>
 
       <ul className="toCollapse rooms">
@@ -56,11 +47,13 @@ export default function Aside({channels, onSelectChannel}) {
         </li>
         {
           userList.map?.( (user, id) => {
-            return (
-              <li>
-                <h3 key={id}>{user}</h3>
-              </li>
-            )
+            if (user != socket?.id){
+              return (
+                <li>
+                  <h3 key={id}>{user}</h3>
+                </li>
+              )
+            } else return
           })
         }
       </ul>
