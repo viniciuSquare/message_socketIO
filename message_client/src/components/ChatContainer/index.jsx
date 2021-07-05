@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { ChatConteiner } from "./styled";
 
 import Message from '../Message'
 
-import { useChannel } from "hooks/useChannel";
+import { useChannel } from "../../hooks/useChannel";
 
 export default function Chat() {
   const inputRef = useRef(null);

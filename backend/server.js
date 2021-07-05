@@ -35,6 +35,17 @@ var MOCK_CHANNELS = [{
   sockets: []
 }];
 
+const getLoggedSockets = () => {
+  let socketsList = []
+  
+  MOCK_CHANNELS.forEach( channel => {
+    socketsList.push(...channel.sockets)
+  } )
+
+  return socketsList
+}
+
+
 // SOCKET EVENT LISTENERS
 io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
   console.log('new client connected');

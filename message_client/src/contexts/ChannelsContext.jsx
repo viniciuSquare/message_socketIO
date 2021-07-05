@@ -1,11 +1,14 @@
 import { createContext, useState, useEffect } from "react";
 import socketClient from "socket.io-client";
 
-const SERVER = "http://172.168.1.88:4001";
+import { database } from '../services/firabase'
+
+// const SERVER = "http://172.168.1.88:4001";
+const SERVER = "http://localhost:4001";
 
 export const ChannelContext = createContext({})
 
-export function ChannleContextProvider(props) {
+export function ChannelContextProvider(props) {
   const [ channels, setChannels ] = useState()
   const [ socket, setSocket ] = useState()
   const [ channel, setChannel ] = useState()
@@ -14,26 +17,43 @@ export function ChannleContextProvider(props) {
     setSocket(socketClient(SERVER));
   }
 
-  const loadChannels = async () => {
-    const { channels } = await fetch(`${SERVER}/getChannels`)
-      .then(response => response.json()).catch(console.log("Erro"))
-
-    return channels;
-  }
-
-  // builder
   useEffect(() => {
-    loadChannels().then(
-      response => {
-        setChannels(response)
-        configureSocket();
-      }
-    )
-  }, [] )
+    configureSocket();
 
+    const channelsRef = database.ref('channels')
+    channelsRef.on('value', channel => {
+      const databaseChannels = channel.val();
+      
+      let parsedChannels = Object.entries( databaseChannels )
+        .map( channel => { 
+          return {
+            id : channel[0], 
+            ...channel[1]
+          }
+        }
+      )
+      parsedChannels.forEach( channel => {
+        channel.sockets = parseClientsList(channel.sockets)
+      } )
+
+      setChannels(parsedChannels)
+
+    })
+    
+    // END LISTENER
+    return () => {
+      leaveChannel()
+      channelsRef.off('value')
+    }
+
+  }, [])
+
+
+  const parseClientsList = (clientsObj) => clientsObj && Object.values(clientsObj)
+  
   // socket listener
   useEffect( () => {
-    if(socket!=null){
+    if(socket){
       socket.on('connection', () => {
         if (channel) {
             handleChannelSelection(channel.id);
@@ -59,26 +79,51 @@ export function ChannleContextProvider(props) {
     }
   }, [socket] )
 
-  useEffect(()=>{ 
-    if(channel?.id != undefined) {
-      handleChannelSelection(channel.id)
-    }
-  }, [ channels ])
-
-  const handleChannelSelection = id => {
-    // TODO
-      // validation if current channel
-
+  async function handleChannelSelection(channelId) {
     let channel = channels.find( channel => {
-        return channel.id === id;
+        return channel.id === channelId;
     });
-    // console.log(channel)
+    
     setChannel(channel)
-    socket.emit('channel-join', id);
+
+    pushSocket(channelId)
+    leaveChannel()
+
+    socket.emit('channel-join', channelId);
   }
 
-  const handleSendMessage = (channel_id, text) => {
-    socket.emit('send-message', { channel_id, text, senderId: socket.id, id: Date.now() });
+  async function pushSocket(channelId) {
+    const channelSocketsRef = await database.ref(`channels/${channelId}/sockets`)
+
+    let sockets = await channelSocketsRef.get()
+      .then(res => parseClientsList(res.val()))
+    console.log(sockets)
+
+    if(!sockets || (sockets.indexOf(socket.id) == (-1)))
+      await channelSocketsRef.push(socket.id)
+    else
+      return
+  }
+
+  async function leaveChannel() {
+    if( channel != undefined ){
+      const oldChannelSockets = await database.ref(`channels/${channel.id}`).get()
+        .then(res => res.val().sockets);
+      
+      if(oldChannelSockets){
+        let socketKey = Object.keys(oldChannelSockets)
+          .find( key => oldChannelSockets[key] == socket.id  )
+        
+        await database.ref(`channels/${channel.id}/sockets/${socketKey}`).remove();
+      }
+    }
+  }
+
+  async function handleSendMessage(text){
+    const channelRef = await database.ref(`channels/${channel.id}/messages`).push({
+      text, senderId: socket.id
+    })
+    // socket.emit('send-message', { channel_id, text, senderId: socket.id, id: Date.now() });
   }
 
   return (
@@ -87,7 +132,7 @@ export function ChannleContextProvider(props) {
         {channel, setChannel,
         channels, setChannels,
         socket, setSocket,
-        handleChannelSelection, handleSendMessage}
+        handleChannelSelection, handleSendMessage, leaveChannel}
       }
     >
       { props.children }
