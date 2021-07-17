@@ -10,7 +10,8 @@ export default function Modal({visibilityToggle}) {
   const { 
     socket,
     handleChannelSelection,
-    leaveChannel  } = useChannel()
+    leaveChannel  
+  } = useChannel()
 
   // console.log(channels)
   async function handleNewChannel(e) {

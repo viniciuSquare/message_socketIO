@@ -19,45 +19,24 @@ export function ChannelContextProvider(props) {
 
   useEffect(() => {
     configureSocket();
-
-    const channelsRef = database.ref('channels')
-    channelsRef.on('value', channel => {
-      const databaseChannels = channel.val();
-      
-      let parsedChannels = Object.entries( databaseChannels )
-        .map( channel => { 
-          return {
-            id : channel[0], 
-            ...channel[1]
-          }
-        }
-      )
-      parsedChannels.forEach( channel => {
-        channel.sockets = parseClientsList(channel.sockets)
-      } )
-
-      setChannels(parsedChannels)
-
-    })
     
     // END LISTENER
     return () => {
       leaveChannel()
-      channelsRef.off('value')
     }
 
   }, [])
-
 
   const parseClientsList = (clientsObj) => clientsObj && Object.values(clientsObj)
   
   // socket listener
   useEffect( () => {
     if(socket){
-      socket.on('connection', () => {
+      socket.on('connection', (channels) => {
         if (channel) {
             handleChannelSelection(channel.id);
         }
+        setChannels(channels)
       });
 
     // TODO

@@ -24,6 +24,7 @@ export default function Aside() {
   if (channels!=null) {
     console.log(channels)
     channelsList = channels?.map( channel => {
+      
       if(channel.active) 
         return <Channel 
           key={channel.id}  
