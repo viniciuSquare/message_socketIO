@@ -10,7 +10,7 @@ Study case based on Google Chat, meant to practice ReactJS, Sockey.IO and CSS.
   * contextAPI
   * useEffect
   * useState
-  * personal hooks criation
+  * personal hooks creation
   
   **Style**
   * Styled components
