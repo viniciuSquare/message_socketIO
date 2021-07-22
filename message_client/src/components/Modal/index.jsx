@@ -9,8 +9,7 @@ import { useChannel } from '../../hooks/useChannel'
 export default function Modal({visibilityToggle}) {
   const { 
     socket,
-    handleChannelSelection,
-    leaveChannel  
+    handleChannelCreation,
   } = useChannel()
 
   // console.log(channels)
@@ -21,21 +20,23 @@ export default function Modal({visibilityToggle}) {
     
     let channelData = Object.fromEntries(formData.entries())
     console.log(channelData)
-    
-    const channelRef = await database.ref('channels');
-    const firebaseRoom = await channelRef.push({
-      name: channelData.name,
-      authorId: socket.id,
-      active: true,
-      participants : 1,
-      sockets : [
-        socket.id
-      ]
-      
-    })
 
-    leaveChannel()
-    handleChannelSelection(firebaseRoom.key);
+    handleChannelCreation(channelData)
+    
+    // const channelRef = await database.ref('channels');
+    // const firebaseRoom = await channelRef.push({
+    //   name: channelData.name,
+    //   authorId: socket.id,
+    //   active: true,
+    //   participants : 1,
+    //   sockets : [
+    //     socket.id
+    //   ]
+      
+    // })
+
+    // handleChannelSelection(firebaseRoom.key);
+
     // console.log(firebaseRoom)
     // socket.emmit('channel-join')
     visibilityToggle();

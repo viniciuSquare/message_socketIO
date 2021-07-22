@@ -24,15 +24,15 @@ export default function Aside() {
   if (channels!=null) {
     console.log(channels)
     channelsList = channels?.map( channel => {
-      
+      let { id, participants, name } = channel;
+
       if(channel.active) 
         return <Channel 
-          key={channel.id}  
-          id={channel.id} 
-          participants={
-            channel.sockets?.length || 0}
-          name = {channel.name}
-          onClick={handleClick} />
+          key={ id }  
+          id={ id }  
+          participants={ participants }
+          name = { name }
+          onClick={ handleClick } />
       else 
         return
     })

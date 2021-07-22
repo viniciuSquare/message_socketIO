@@ -19,15 +19,7 @@ export function ChannelContextProvider(props) {
 
   useEffect(() => {
     configureSocket();
-    
-    // END LISTENER
-    return () => {
-      leaveChannel()
-    }
-
   }, [])
-
-  const parseClientsList = (clientsObj) => clientsObj && Object.values(clientsObj)
   
   // socket listener
   useEffect( () => {
@@ -38,71 +30,41 @@ export function ChannelContextProvider(props) {
         }
         setChannels(channels)
       });
-
-    // TODO
-      socket.on('channel', channels => {     
-        console.log("AUX CHANNEL IT IS " + channels)
-        setChannels(channels)
+    
+    // Message
+      socket.on('new-message', channel => {
+        setChannel(channel)
         
-      // Message
-        socket.on('message', channels => {
-          setChannels(channels)
-          
-          console.log("on message", channels)
-        });
-
-        // setChannels(channels)
-
-      })
-      setChannels(channels)
+        console.log("on message", channel)
+      });
     }
   }, [socket] )
 
-  async function handleChannelSelection(channelId) {
-    let channel = channels.find( channel => {
-        return channel.id === channelId;
-    });
-    
-    setChannel(channel)
-
-    pushSocket(channelId)
-    leaveChannel()
-
-    socket.emit('channel-join', channelId);
+  function handleChannelSelection(channelId) {
+    socket.emit('channel-join', channelId, "", (joinedChannel) => {
+      // console.log(joinedChannel)
+      setChannel(joinedChannel)
+    } )
   }
 
-  async function pushSocket(channelId) {
-    const channelSocketsRef = await database.ref(`channels/${channelId}/sockets`)
-
-    let sockets = await channelSocketsRef.get()
-      .then(res => parseClientsList(res.val()))
-    console.log(sockets)
-
-    if(!sockets || (sockets.indexOf(socket.id) == (-1)))
-      await channelSocketsRef.push(socket.id)
-    else
-      return
-  }
-
-  async function leaveChannel() {
-    if( channel != undefined ){
-      const oldChannelSockets = await database.ref(`channels/${channel.id}`).get()
-        .then(res => res.val().sockets);
-      
-      if(oldChannelSockets){
-        let socketKey = Object.keys(oldChannelSockets)
-          .find( key => oldChannelSockets[key] == socket.id  )
-        
-        await database.ref(`channels/${channel.id}/sockets/${socketKey}`).remove();
-      }
-    }
-  }
-
-  async function handleSendMessage(text){
-    const channelRef = await database.ref(`channels/${channel.id}/messages`).push({
-      text, senderId: socket.id
+  function handleChannelCreation(channelName) {
+    socket.emit('channel-creation', channelName, "", (createdChannel) => { 
+      /* GET CREATED CHANNEL DATA */ 
+      handleChannelSelection(createdChannel.id)
     })
-    // socket.emit('send-message', { channel_id, text, senderId: socket.id, id: Date.now() });
+  }
+
+  function handleSendMessage(text){
+    socket.emit('send-message', { 
+        channelId: channel.id,
+        text, 
+        senderId: socket.id, 
+        time: Date.now() 
+      }, "_", (channelData) => {
+        // console.log(channelData)
+        setChannel(channelData)
+      }
+    );
   }
 
   return (
@@ -111,7 +73,7 @@ export function ChannelContextProvider(props) {
         {channel, setChannel,
         channels, setChannels,
         socket, setSocket,
-        handleChannelSelection, handleSendMessage, leaveChannel}
+        handleChannelSelection, handleSendMessage, handleChannelCreation}
       }
     >
       { props.children }
