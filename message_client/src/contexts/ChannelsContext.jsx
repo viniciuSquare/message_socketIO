@@ -1,11 +1,14 @@
 import { createContext, useState, useEffect } from "react";
 import socketClient from "socket.io-client";
 
-const SERVER = "http://172.168.1.88:4001";
+import { database } from '../services/firabase'
+
+// const SERVER = "http://172.168.1.88:4001";
+const SERVER = "http://localhost:4001";
 
 export const ChannelContext = createContext({})
 
-export function ChannleContextProvider(props) {
+export function ChannelContextProvider(props) {
   const [ channels, setChannels ] = useState()
   const [ socket, setSocket ] = useState()
   const [ channel, setChannel ] = useState()
@@ -14,71 +17,54 @@ export function ChannleContextProvider(props) {
     setSocket(socketClient(SERVER));
   }
 
-  const loadChannels = async () => {
-    const { channels } = await fetch(`${SERVER}/getChannels`)
-      .then(response => response.json()).catch(console.log("Erro"))
-
-    return channels;
-  }
-
-  // builder
   useEffect(() => {
-    loadChannels().then(
-      response => {
-        setChannels(response)
-        configureSocket();
-      }
-    )
-  }, [] )
-
+    configureSocket();
+  }, [])
+  
   // socket listener
   useEffect( () => {
-    if(socket!=null){
-      socket.on('connection', () => {
+    if(socket){
+      socket.on('connection', (channels) => {
         if (channel) {
             handleChannelSelection(channel.id);
         }
-      });
-
-    // TODO
-      socket.on('channel', channels => {     
-        console.log("AUX CHANNEL IT IS " + channels)
         setChannels(channels)
+      });
+    
+    // Message
+      socket.on('new-message', channel => {
+        setChannel(channel)
         
-      // Message
-        socket.on('message', channels => {
-          setChannels(channels)
-          
-          console.log("on message", channels)
-        });
-
-        // setChannels(channels)
-
-      })
-      setChannels(channels)
+        console.log("on message", channel)
+      });
     }
   }, [socket] )
 
-  useEffect(()=>{ 
-    if(channel?.id != undefined) {
-      handleChannelSelection(channel.id)
-    }
-  }, [ channels ])
-
-  const handleChannelSelection = id => {
-    // TODO
-      // validation if current channel
-
-    let channel = channels.find( channel => {
-        return channel.id === id;
-    });
-    // console.log(channel)
-    setChannel(channel)
-    socket.emit('channel-join', id);
+  function handleChannelSelection(channelId) {
+    socket.emit('channel-join', channelId, "", (joinedChannel) => {
+      // console.log(joinedChannel)
+      setChannel(joinedChannel)
+    } )
   }
 
-  const handleSendMessage = (channel_id, text) => {
-    socket.emit('send-message', { channel_id, text, senderId: socket.id, id: Date.now() });
+  function handleChannelCreation(channelName) {
+    socket.emit('channel-creation', channelName, "", (createdChannel) => { 
+      /* GET CREATED CHANNEL DATA */ 
+      handleChannelSelection(createdChannel.id)
+    })
+  }
+
+  function handleSendMessage(text){
+    socket.emit('send-message', { 
+        channelId: channel.id,
+        text, 
+        senderId: socket.id, 
+        time: Date.now() 
+      }, "_", (channelData) => {
+        // console.log(channelData)
+        setChannel(channelData)
+      }
+    );
   }
 
   return (
@@ -87,7 +73,7 @@ export function ChannleContextProvider(props) {
         {channel, setChannel,
         channels, setChannels,
         socket, setSocket,
-        handleChannelSelection, handleSendMessage}
+        handleChannelSelection, handleSendMessage, handleChannelCreation}
       }
     >
       { props.children }

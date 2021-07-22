@@ -1,7 +1,8 @@
-import styler from 'styled-components'
+import styled from 'styled-components'
 
-export const HeaderContainer = styled.header`
-  
-  
+export const HeaderStyled = styled.header`
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
   
 `

@@ -1,5 +1,14 @@
 var app = require('express')();
 var http = require('http').createServer(app);
+
+const { 
+  getFirebaseChannels,
+  joinChannel,
+  createChannel,
+  sendMessage,
+  channelsListener
+} = require('./services/DataTransfer')
+
 var io = require('socket.io')(http, {
   cors: {
     origin: "*",
@@ -18,94 +27,60 @@ http.listen(PORT, () => {
     console.log(`listening on *:${PORT}`);
 });
 // END SERVER CONFIG
-var MOCK_CHANNELS = [{
-  name: 'Global chat',
-  participants: 0,
-  id: 0,
-  sockets: []
-}, {
-  name: 'Funny',
-  participants: 0,
-  id: 1,
-  sockets: []
-}, {
-  name: 'SAD',
-  participants: 0,
-  id: 4,
-  sockets: []
-}];
+//  ----------------
+let channels
+
+function setChannels(newChannels) {
+  channels = newChannels
+}
+
+// channelsListener()
+//   .then(result => setChannels(result.val()))
+
+getFirebaseChannels()
+  .then( result => setChannels(result))
+
+// FEED SERVER DATA
 
 // SOCKET EVENT LISTENERS
 io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
-  console.log('new client connected');
+  console.log('new client connected', socket.id);
 
-  socket.emit('connection', null);
+  socket.emit('connection', channels);
 
-  socket.on('channel-join', id => {
+  socket.on('channel-join', async function(id, _ , responseCallback){
     console.log('channel join', id);
 
-    MOCK_CHANNELS.forEach(channel => {
-      if (channel.id == id) {
-        // if socket isn't at the channel, add it
-        if (channel.sockets.indexOf(socket.id) == (-1)) {
-          console.log("new socket client")
-          channel.sockets.push(socket.id);
-          channel.participants++;
+    let joinedChannel = await joinChannel(id, socket.id)
+    // console.log(joinedChannel)
 
-          console.log(MOCK_CHANNELS)
-          io.emit('channel', MOCK_CHANNELS);
-        }
-        console.log(channel)
-      } else {
-          console.log("AQUI CARAI")
-          let index = channel.sockets.indexOf(socket.id);
-          if (index != (-1)) {
-            channel.sockets.splice(index, 1);
-            channel.participants--;
-            
-            console.log(MOCK_CHANNELS)
-            io.emit('channel', MOCK_CHANNELS);
-          }
-      }
-    });
-
-    return id;
+    responseCallback(joinedChannel)
   });
 
+  socket.on('channel-creation', async function(channelData, _, responseCallback){
+
+    let createdChannel = await createChannel(channelData)
+
+    responseCallback(createdChannel)
+
+  })
+
 // MESSAGE
-  socket.on('send-message', message => {
+  socket.on('send-message', async function(messagePackage, _, responseCallback){
     
-    console.log("MESSAGE ", message.text)
+    console.log("MESSAGE ", messagePackage)
 
-    MOCK_CHANNELS.forEach( channel => {
+    let channelData = await sendMessage(messagePackage)
+
+    responseCallback(channelData)
     
-      if (channel.id === message.channel_id) {
-        if (!channel.messages) {
-          channel.messages = [message];
-          console.log("FIRST", channel)
-
-        } else {
-          channel.messages.push(message);
-          console.log("THERE IS MSG", channel)
-        }
-      }
-
-    });
-    
-    io.emit('message', MOCK_CHANNELS);
   });
 
 // DISCONNECT
   socket.on('disconnect', () => {
     console.log("desconnected " + socket.id )
-      MOCK_CHANNELS.forEach(channel => {
-          let index = channel.sockets.indexOf(socket.id);
-          if (index != (-1)) {
-              channel.sockets.splice(index, 1);
-              channel.participants--;
-              io.emit('channel', channel);
-          }
-      });
+      
+    io.emit('client-disconnected', {client: socket.id});
   });
 
 });

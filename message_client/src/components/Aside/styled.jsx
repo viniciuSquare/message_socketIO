@@ -5,6 +5,27 @@ export const AsideContainer = styled.aside`
   border-right: 1px solid rgba(0, 0, 0, 0.201);
 
   /* section buttons */
+
+  .aside-block-head .collapsible {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-right: 2rem;
+
+    button {
+      line-height: 0;
+      width: 30px;
+      background: transparent;
+      border: none;
+      img {
+        width: 20px;
+      }
+      
+    }
+
+  }
+
   .collapsible {
     width: 100%;
     height: 3rem;

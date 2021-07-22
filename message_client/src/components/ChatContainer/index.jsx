@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { ChatConteiner } from "./styled";
 
 import Message from '../Message'
 
-import { useChannel } from "hooks/useChannel";
+import { useChannel } from "../../hooks/useChannel";
 
 export default function Chat() {
   const inputRef = useRef(null);
@@ -19,7 +19,7 @@ export default function Chat() {
 
     if (inputValue && inputValue != '') {
 
-      handleSendMessage(channel.id, inputValue);
+      handleSendMessage(inputValue);
 
       setMessage({inputValue: ""});
 
@@ -43,13 +43,14 @@ export default function Chat() {
           {/* massages */}
           <ul id="messages">
             { 
+              // console.log(channel.messages)
               channel.messages ? (
                 channel.messages.map((message, idx) => {
                   return (
                     <>
                       <Message 
                         key={idx}
-                        senderName={message.senderName} 
+                        senderName={message.senderId} 
                         message={message.text} 
                         className={socket.id == message.senderName ? "sent" : "received"}
                       />

@@ -9,6 +9,8 @@
 /coverage
 /old
 
+firabase.js
+
 # production
 /build
 
