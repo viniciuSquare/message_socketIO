@@ -41,6 +41,7 @@ To avoid many listeners, the solution was to keep the socket server to travel th
 ``cd backend && npm start`` - it will start the Socket.IO server at port 4001
 
 To run you'll need to create a Firebase project
+
 Run this to create the file `touch backend/services/firebase.js` then implement the following code using your project's credentials:
 
 ```javascript
