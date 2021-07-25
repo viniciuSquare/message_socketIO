@@ -36,15 +36,15 @@ export default function Chat() {
       { channel ?
         <>
           <header>
-            <h2>{channel.name}</h2>
+            <h2 className="channel-title">{channel.name}</h2>
             <h4 className="online status">online</h4>
           </header>
           
           {/* massages */}
           <ul id="messages">
+            {console.log(channel)}
             { 
-              // console.log(channel.messages)
-              channel.messages ? (
+              channel.messages.length ? (
                 channel.messages.map((message, idx) => {
                   return (
                     <>
@@ -57,7 +57,7 @@ export default function Chat() {
                     </>
                   )
                 }) 
-              ) : <h1 className="emptyChat chatAlert">No messages</h1>
+              ) : <h1 className="emptyChat chat-alert">No messages</h1>
             }
 
           </ul>
@@ -81,7 +81,7 @@ export default function Chat() {
 
           </form>
         </>
-        : <h1 className="chatAlert">Select a communication channel</h1>
+        : <h1 className="chat-alert">Select a communication channel</h1>
       } 
     </ChatConteiner>
 

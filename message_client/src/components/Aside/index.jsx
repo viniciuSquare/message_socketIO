@@ -8,7 +8,7 @@ import { AsideContainer } from "./styled";
 import plusImg from '../../assets/buttons/plus.svg'
 
 export default function Aside() {
-  const { channels, handleChannelSelection} = useChannel();
+  const { channels, handleChannelSelection } = useChannel();
 
   const [isModalVisible, setIsModalVisible] = useState(false)
   const toggleModalVisibility = () => setIsModalVisible(!isModalVisible);

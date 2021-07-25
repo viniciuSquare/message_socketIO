@@ -1,16 +1,17 @@
 import styled from "styled-components";
 
 export const ChatConteiner = styled.div`
-  position: relative;
-  
-  /* padding-top: 0.5rem;   */
+  display: grid;
+  grid-template-rows: 3.6rem auto 3rem;
+
+  padding-bottom: 1.5rem;
   
   header {
     padding-top: 0.5rem;  
 
   }
 
-  header h2 {
+  header h2.channel-title {
     color: #595a5b;  
     font-size: 1.3rem;
     font-weight: 400;
@@ -19,18 +20,19 @@ export const ChatConteiner = styled.div`
   
 /* Messages */
   #messages {
-    height: 80%;
-    max-height: 60%;
+    height: 100%;
+    width: 100%;
+    max-width: 95%;
+    margin: auto;
 
     overflow-x: auto;
+    z-index: 10;
 
-    background-color: #595a5b;
+    /* background-color: #595a5b; */
 
-    max-width: 80%;
-    margin: auto;
   }
 
-  .chatAlert {
+  .chat-alert {
     height: 100%;
     width: 100%;
 
@@ -43,10 +45,12 @@ export const ChatConteiner = styled.div`
   #form { 
     display: flex; 
     padding: 0.25rem; 
+    width: 100%;
+
 
     align-items: center;
 
-    position: absolute; 
+    /* position: absolute;  */
 
     bottom: 2.4rem; 
     left: 0; 
@@ -55,7 +59,7 @@ export const ChatConteiner = styled.div`
     height: 3rem;   
     margin: 0 auto;
 
-    max-width: 90%;
+    max-width: 95%;
 
 
   }
@@ -63,14 +67,15 @@ export const ChatConteiner = styled.div`
   #input { 
     border: none; 
     padding: 0 1rem; 
-    flex-grow: 1; 
-    border-radius: 2rem; 
     margin: 0.25rem; 
 
+    flex-grow: 1; 
     height: 3rem;
 
+    border-radius: 2rem; 
+
     background-color: #e9e9e9;
-    }
+  }
 
   #input:focus { 
     outline: none; 

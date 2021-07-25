@@ -12,8 +12,8 @@ function App() {
   // useEffect(() => { console.log(channels) } , [channels])
 
   return (
-    <AuthContextProvider>
-      <ChannelContextProvider>
+    <ChannelContextProvider>
+      <AuthContextProvider>
         <AppContainer>
           
           <Header/>
@@ -23,8 +23,8 @@ function App() {
           </div>
           
         </AppContainer>
-      </ChannelContextProvider>
-    </AuthContextProvider>
+      </AuthContextProvider>
+    </ChannelContextProvider>
   );
 }
 

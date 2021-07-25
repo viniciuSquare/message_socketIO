@@ -7,17 +7,19 @@ export default function Header() {
   const { user, signInWithGoogle } = useAuth()
 
   async function signIn() {
-  //   await signInWithGoogle()
+    await signInWithGoogle()
   }
   
   return (
     <HeaderStyled>
       <img src={ChatIcon} alt="logo_chat"/>
       <div className="currentUserIcon">
-        { user ? (
-          // <img src={user.avatar} alt="" />
-          console.log(user)
-          ) : <button onClick={signIn}>Login</button>
+        { 
+          user ? ( 
+              <div className="user-avatar">
+                <img src={user.avatar} alt={user.name} />
+              </div>
+            ) : <button onClick={signIn}>Login</button>
         }
       </div>
     </HeaderStyled>

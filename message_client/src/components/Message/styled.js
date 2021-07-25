@@ -3,31 +3,38 @@ import styled from 'styled-components'
 export const MessageContainer = styled.div`
   display: flex;
 
-  background-color: aliceblue;
-  padding: 0.8rem;
+  /* background-color: aliceblue; */
+  padding: 0.8rem 0 ;
 
   .client-badge {
-    width: 2.5rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
 
     text-align: center;
 
-    font-size: 1.6rem;
+    font-size: 1rem;
     
     background: #c7a8a8;
     
-    margin-left: 3rem;
-    margin-right: 1.7rem;
+    margin-left: 1.25rem;
+    margin-right: 0.7rem;
     
-    h3{
+    h3.name-letter{
       font-weight: 300;
+    }
 
-      height: 100%;
+  }
 
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+  .message {
+    h4 {
+      font-weight: 500;
 
+      font-size: .8rem;
+      color: #333;
+    }
+    p {
+      padding-top: 0.4rem ;
     }
 
   }

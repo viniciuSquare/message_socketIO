@@ -1,10 +1,9 @@
 import { createContext, useState, useEffect } from "react";
 import socketClient from "socket.io-client";
+import { useAuth } from "../hooks/useAuth";
 
-import { database } from '../services/firabase'
-
-// const SERVER = "http://172.168.1.88:4001";
-const SERVER = "http://localhost:4001";
+const SERVER = "http://172.168.1.88:4001";
+// const SERVER = "http://192.168.0.102:4001";
 
 export const ChannelContext = createContext({})
 
@@ -12,6 +11,8 @@ export function ChannelContextProvider(props) {
   const [ channels, setChannels ] = useState()
   const [ socket, setSocket ] = useState()
   const [ channel, setChannel ] = useState()
+
+  const {user} = useAuth()
 
   function configureSocket() {
     setSocket(socketClient(SERVER));
@@ -30,6 +31,13 @@ export function ChannelContextProvider(props) {
         }
         setChannels(channels)
       });
+
+      socket.on("channels-update", channels => {
+        if (channel) {
+          handleChannelSelection(channel.id);
+        }
+        setChannels(channels)
+      })
     
     // Message
       socket.on('new-message', channel => {
@@ -48,9 +56,9 @@ export function ChannelContextProvider(props) {
   }
 
   function handleChannelCreation(channelName) {
-    socket.emit('channel-creation', channelName, "", (createdChannel) => { 
+    socket.emit('channel-creation', channelName, "", (createdChannelId) => { 
       /* GET CREATED CHANNEL DATA */ 
-      handleChannelSelection(createdChannel.id)
+      handleChannelSelection(createdChannelId)
     })
   }
 
@@ -58,7 +66,7 @@ export function ChannelContextProvider(props) {
     socket.emit('send-message', { 
         channelId: channel.id,
         text, 
-        senderId: socket.id, 
+        sender: user.name | socket.id, 
         time: Date.now() 
       }, "_", (channelData) => {
         // console.log(channelData)

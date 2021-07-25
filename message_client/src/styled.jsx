@@ -1,21 +1,25 @@
 import styled from "styled-components";
 
 export const AppContainer = styled.div`
-  max-height: 100vh;
-  max-width: 100vw;
+  /* max-height: 100vh;
+  max-width: 100vw; */
+
+  display: grid;
+  grid-template-rows: 3.6rem auto ;
 
   .container {
     display: grid;
-    grid-template-columns: 330px 75%; 
+    grid-template-columns: 300px auto; 
 
-    height: calc(100vh - 4.8rem);
+    height: calc(100vh - 3.6rem);
+    /* height: 100%; */
 
   }
 
   header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.201);
 
-    height: 3.8rem;
+    height: 3.6rem;
     padding: 0.75rem 2rem;
 
   } 

@@ -1,15 +1,4 @@
-var firebase = require('./firabase')
-
-// UNUSED
-var channelsListener = async function(callbackFn) {
-  let channelsRef = await firebase.database().ref("channels")
-  let channelsSnapshot = channelsRef.once("value").then(snap => {
-      return snap
-    })
-  // let channelsSnap = channelsRef.val()
-  return channelsSnapshot
-}
-
+var firebase = require('./firebase')
 // Removes the attribute with the given keys and return the array of values
 const parseFirabaseObjToArray = (data,...keys) => {
   keys.forEach( key => {
@@ -19,10 +8,8 @@ const parseFirabaseObjToArray = (data,...keys) => {
   return data
 }
 
-var getFirebaseChannels = async function() {
-  const channelsRef = await firebase.database().ref("channels").get()
-
-  let parsedChannels = Object.entries( channelsRef.val())
+const parseChannels = (channelsSnapshot) => {
+  let parsedChannels = Object.entries( channelsSnapshot )
     .map( channel => { 
       return {
         id : channel[0], 
@@ -31,7 +18,7 @@ var getFirebaseChannels = async function() {
     }
   )
 
-  // REMOVE PRIVADE DATA
+// REMOVE PRIVADE DATA
   parsedChannels.forEach( channel => {
     delete channel.messages
     
@@ -44,7 +31,20 @@ var getFirebaseChannels = async function() {
     console.log(channel)
   })
 
-  return await parsedChannels
+  return parsedChannels
+}
+
+var channelsListener = async function(callbackFn) {
+  let channelsRef = await firebase.database().ref("channels")
+  channelsRef.on("value", async function(snapshot){
+    callbackFn( parseChannels(snapshot.val()) )
+  })
+}
+
+var getFirebaseChannels = async function() {
+  const channelsRef = await firebase.database().ref("channels").get()
+  
+  return parseChannels(channelsRef.val())
 } 
 
 async function getChannelData(channelId) {
@@ -73,28 +73,38 @@ var sendMessage = async function(messageData) {
 
 async function joinChannel(channelId, socketId) {
   const channelSocketsRef = firebase.database().ref(`channels/${channelId}/sockets`)
-  await channelSocketsRef.push( socketId )
+
+  const socketsSnapshot = await channelSocketsRef.get()
+  const channelSockets = Object.values(socketsSnapshot.val()) 
   
-  return getChannelData(channelId)
+  let socketJoinedKey;
+  if (channelSockets.indexOf(socketId) === (-1)){
+    socketJoinedRef = await channelSocketsRef.push( socketId )
+
+  } else  
+    console.log("Já tava aqui")
+
+  
+
+  return {
+    joinedChannel : await getChannelData(channelId),
+    socketJoinedKey : socketJoinedRef.key
+  }
 }
+
+const isSocketLogged = ( socketId ) => {
+  
+}
+
 async function createChannel(channelData) {
   const channelsRef = await firebase.database().ref('channels')
   const newChannelRef = await channelsRef.push(channelData)
 
-  return getChannelData(newChannelRef.key);
+  return newChannelRef.key;
 }
 
-var leaveChannel = async function(channelId, socketId) {
-  const channelSockets = await firebase.database().ref(`channels/${channelId}`).get()
-    // .then( res => res.val().sockets)
-
-  if(channelSockets){
-    let socketKey = Object.keys(channelSockets)
-      .find( key => channelSockets[key] == socketId  )
-    
-    await firebase.database().ref(`channels/${channelId}/sockets/${socketKey}`).remove();
-  }
-  
+var leaveChannel = async function(channelId, socketKey) {
+  await firebase.database().ref(`channels/${channelId}/sockets/${socketKey}`).remove()  
 }
 
 

@@ -1,10 +1,12 @@
 import { createContext, useEffect, useState } from "react";
+import { useChannel } from "../hooks/useChannel";
 import { auth, firebase } from '../services/firabase'
 
 export const AuthContext = createContext({})
 
 export function AuthContextProvider(props){
   const [user, setUser] = useState();
+  const {socket} = useChannel()
 
   // when componet mount, it will listen if was auth already done
   useEffect(() => {
@@ -12,6 +14,8 @@ export function AuthContextProvider(props){
     auth.onAuthStateChanged(user => {
       if(user) {
         const { displayName, photoURL, uid } = user;
+
+        // socket.emit('user-auth', {displayName, photoURL, uid } )
         
         if( !displayName || !photoURL) {
           throw new Error('Missing information from Google Account')

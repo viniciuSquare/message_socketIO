@@ -6,7 +6,8 @@ const {
   joinChannel,
   createChannel,
   sendMessage,
-  channelsListener
+  channelsListener,
+  leaveChannel
 } = require('./services/DataTransfer')
 
 var io = require('socket.io')(http, {
@@ -32,15 +33,13 @@ let channels
 
 function setChannels(newChannels) {
   channels = newChannels
+  
+  io.emit("channels-update", channels)
+  console.log("CHANNELS HAVE CHANGED")
 }
 
-// channelsListener()
-//   .then(result => setChannels(result.val()))
-
-getFirebaseChannels()
-  .then( result => setChannels(result))
-
 // FEED SERVER DATA
+channelsListener(setChannels)
 
 // SOCKET EVENT LISTENERS
 io.on('connection', (socket) => { // socket object may be used to send specific messages to the new connected client
@@ -51,13 +50,21 @@ io.on('connection', (socket) => { // socket object may be used to send specific 
   socket.on('channel-join', async function(id, _ , responseCallback){
     console.log('channel join', id);
 
-    let joinedChannel = await joinChannel(id, socket.id)
+    let {joinedChannel, socketJoinedKey} = await joinChannel(id, socket.id)
+    
     // console.log(joinedChannel)
+    socket.connectedChannel = {
+      channelId : joinedChannel.id,
+      socketKey : socketJoinedKey
+    };
 
     responseCallback(joinedChannel)
   });
 
   socket.on('channel-creation', async function(channelData, _, responseCallback){
+    channelData.active = true;
+    // create alias
+    channelData.authorId = socket.alias | socket.id ;
 
     let createdChannel = await createChannel(channelData)
 
@@ -76,9 +83,15 @@ io.on('connection', (socket) => { // socket object may be used to send specific 
     
   });
 
+// TODO - PRIVATE MESSAGING
+
 // DISCONNECT
   socket.on('disconnect', () => {
-    console.log("desconnected " + socket.id )
+    
+    let {channelId, socketKey} = socket.connectedChannel;
+    
+    leaveChannel(channelId, socketKey);
+    console.log("desconnected " + socket.id + " from " + channelId )
       
     io.emit('client-disconnected', {client: socket.id});
   });
